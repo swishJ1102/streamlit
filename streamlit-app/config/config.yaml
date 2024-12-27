@@ -1,0 +1,37 @@
+cookie:
+  expiry_days: 7
+  key: some_key
+  name: some_cookie_name
+credentials:
+  usernames:
+    liqh:
+      email: qinghao.li@dhc.com.cn
+      failed_login_attempts: '3'
+      logged_in: 'false'
+      name: ''
+      password: $2b$12$LjevdT.ZAKwuX9Vc6QgTnezc/s0CLZxscMjxWHzFh8lM6o2PU90fe
+      role: admin
+    wangcy:
+      email: chuyun.wang@dhc.com.cn
+      failed_login_attempts: '3'
+      logged_in: 'false'
+      name: "\u738B\u695A\u97FB"
+      password: $2b$12$wzCODk.fDUA1VJC1RQc6R.ngEeRKIyywhFO2ZtCPVCcNCCBozrEEe
+      role: admin
+    wangys:
+      email: yongsheng.wang@dhc.com.cn
+      failed_login_attempts: '3'
+      logged_in: 'false'
+      name: "\u738B\u6C38\u76DB"
+      password: $2b$12$ou6BPzW9s2Pwh5XN5l6TResrKTwW2ZKhpJ3KzBSv6BU/quH1A.ZLC
+      role: admin
+    zhaojq:
+      email: user
+      failed_login_attempts: 'false'
+      logged_in: null
+      name: "\u8D99\u5609\u742A"
+      password: $2b$12$ifuFJwsBpadm7ihb6j7bju2mN3ihDprPg2FI/EXE9rDu5kJ4wBlRK
+      role: '3'
+pre-authorized:
+  emails:
+  - melsby@gmail.com
