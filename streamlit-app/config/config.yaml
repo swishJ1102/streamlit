@@ -6,32 +6,33 @@ credentials:
   usernames:
     liqh:
       email: qinghao.li@dhc.com.cn
+      failed: '3'
       failed_login_attempts: '3'
-      logged_in: 'false'
-      name: ''
-      password: $2b$12$LjevdT.ZAKwuX9Vc6QgTnezc/s0CLZxscMjxWHzFh8lM6o2PU90fe
+      logged_in: false
+      name: "\u674E\u6176\u8C6A"
+      password: $2b$12$br5g48Ia8I7A6rmQke6JN.Ubd6p9s0qx.pIKWmamDDfu1S3nHY95K
       role: admin
     wangcy:
       email: chuyun.wang@dhc.com.cn
       failed_login_attempts: '3'
-      logged_in: 'false'
+      logged_in: false
       name: "\u738B\u695A\u97FB"
-      password: $2b$12$wzCODk.fDUA1VJC1RQc6R.ngEeRKIyywhFO2ZtCPVCcNCCBozrEEe
+      password: $2b$12$sK2tYAiEymGHWhnbjf3q/uG/S3SUPF0XAN2bkJNpvOTIKCYo11sYG
       role: admin
     wangys:
       email: yongsheng.wang@dhc.com.cn
       failed_login_attempts: '3'
-      logged_in: 'false'
+      logged_in: true
       name: "\u738B\u6C38\u76DB"
-      password: $2b$12$ou6BPzW9s2Pwh5XN5l6TResrKTwW2ZKhpJ3KzBSv6BU/quH1A.ZLC
+      password: $2b$12$/L8DxLeQEDlXWx06Bsuktui9Yih/pXEW6U1M/qohbYnIAg9rpcv3O
       role: admin
     zhaojq:
-      email: user
-      failed_login_attempts: 'false'
-      logged_in: null
+      email: jiaqi2.zhao@dhc.com.cn
+      failed_login_attempts: '3'
+      logged_in: false
       name: "\u8D99\u5609\u742A"
-      password: $2b$12$ifuFJwsBpadm7ihb6j7bju2mN3ihDprPg2FI/EXE9rDu5kJ4wBlRK
-      role: '3'
+      password: $2b$12$YY99ihrR0rmWsWm8aECbpO3c8aBszCi52t45rDCul.3MoH21pgKQG
+      role: user
 pre-authorized:
   emails:
   - melsby@gmail.com
