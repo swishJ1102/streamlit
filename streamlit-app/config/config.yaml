@@ -6,32 +6,31 @@ credentials:
   usernames:
     liqh:
       email: qinghao.li@dhc.com.cn
-      failed: '3'
-      failed_login_attempts: '3'
+      failed_login_attempts: '9'
       logged_in: false
       name: "\u674E\u6176\u8C6A"
-      password: $2b$12$br5g48Ia8I7A6rmQke6JN.Ubd6p9s0qx.pIKWmamDDfu1S3nHY95K
+      password: $2b$12$zYwXx5z49bkHEt8NW7qUEOpFoMM7PGVkGdPRKo5oTxTrdb7xSXQQq
       role: admin
     wangcy:
       email: chuyun.wang@dhc.com.cn
       failed_login_attempts: '3'
       logged_in: false
       name: "\u738B\u695A\u97FB"
-      password: $2b$12$sK2tYAiEymGHWhnbjf3q/uG/S3SUPF0XAN2bkJNpvOTIKCYo11sYG
+      password: $2b$12$xZhyVh7s4GEPlHSp5B10de4a5rV3YljwaoA8CPWUdLSJJboQW5rrW
       role: admin
     wangys:
       email: yongsheng.wang@dhc.com.cn
       failed_login_attempts: '3'
       logged_in: true
       name: "\u738B\u6C38\u76DB"
-      password: $2b$12$/L8DxLeQEDlXWx06Bsuktui9Yih/pXEW6U1M/qohbYnIAg9rpcv3O
+      password: $2b$12$XmrEt6F8Fgxe7j9ul0BuyeaFldU0mlfrZTNBFFrRAWge56rdK2p7.
       role: admin
     zhaojq:
       email: jiaqi2.zhao@dhc.com.cn
       failed_login_attempts: '3'
       logged_in: false
       name: "\u8D99\u5609\u742A"
-      password: $2b$12$YY99ihrR0rmWsWm8aECbpO3c8aBszCi52t45rDCul.3MoH21pgKQG
+      password: $2b$12$pS4SP9v0Tgz3byEzXSgQY.UrrcnPqaRVdW36NKtjqEMNYYraq0wWG
       role: user
 pre-authorized:
   emails:

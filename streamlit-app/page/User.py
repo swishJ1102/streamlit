@@ -79,8 +79,7 @@ def render():
     #     action = st.selectbox('Choose an option:', options)
 
     action = st.selectbox(
-        "",
-        ["ユーザー一覧", "ユーザー新規", "ユーザー更新", "ユーザー削除"]
+        "", ["ユーザー一覧", "ユーザー新規", "ユーザー更新", "ユーザー削除"]
     )
     st.divider()
 
@@ -100,7 +99,8 @@ def render():
 def show_users(users):
     # st.markdown("### ユーザー一覧")
     # st.write("**ユーザー一覧**")
-    st.markdown("""
+    st.markdown(
+        """
         <style>
             body {
                 margin: 0;
@@ -205,47 +205,92 @@ def show_users(users):
             <div class="snowflake"></div>
             <div class="snowflake"></div>
         </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
     user_list = []
     for user, content in users.items():
-        user_list.append([
-            user,
-            content['name'],
-            content['password'],
-            content['email'],
-            content['role'],
-            content['logged_in'],
-            content['failed_login_attempts']
-        ])
+        user_list.append(
+            [
+                user,
+                content["name"],
+                content["password"],
+                content["email"],
+                content["role"],
+                content["logged_in"],
+                content["failed_login_attempts"],
+            ]
+        )
     user_data = pd.DataFrame(user_list)
-    user_data.columns = ["ログインID", "ユーザー名", 'パスワード', 'Email', 'ロール', '登録状況', '失敗回数']
-    user_data = user_data.set_index('ログインID')
-    st.dataframe(user_data)
+    user_data.columns = [
+        "ログインID",
+        "ユーザー名",
+        "パスワード",
+        "Email",
+        "ロール",
+        "登録状況",
+        "失敗回数",
+    ]
+    user_data = user_data.set_index("ログインID")
+    # st.dataframe(user_data)
     # AgGrid(user_data)
+    st.data_editor(
+        user_data,
+        column_config={
+            "ログインID": "ログインID",
+            "ユーザー名": "ユーザー名",
+            "パスワード": "パスワード",
+            "Email": "Email",
+            "ロール": "ロール",
+            "登録状況": "登録状況",
+            "失敗回数": "失敗回数",
+        },
+        disabled=[
+            "ログインID",
+            "ユーザー名",
+            "パスワード",
+            "Email",
+            "ロール",
+            "登録状況",
+            "失敗回数",
+        ],
+        hide_index=True,
+        use_container_width=True,
+    )
 
 
 def add_user():
     # user_list = [['', '', '', '', '', False, '']]
     st.write("新規ユーザーを入力してください。")
     user_list = []
-    user_data = pd.DataFrame(user_list,
-                             columns=["ログインID", "ユーザー名", 'パスワード', 'Email', 'ロール', '登録状況', '失敗回数'])
+    user_data = pd.DataFrame(
+        user_list,
+        columns=[
+            "ログインID",
+            "ユーザー名",
+            "パスワード",
+            "Email",
+            "ロール",
+            "登録状況",
+            "失敗回数",
+        ],
+    )
     # user_data = user_data.set_index('ログインID')
     edited_data = st.data_editor(
         user_data,
         column_config={
             "ログインID": "ログインID",
             "ユーザー名": "ユーザー名",
-            'パスワード': "パスワード",
-            'Email': "Email",
-            'ロール': "ロール",
-            '登録状況': "登録状況",
-            '失敗回数': "失敗回数"
+            "パスワード": "パスワード",
+            "Email": "Email",
+            "ロール": "ロール",
+            "登録状況": "登録状況",
+            "失敗回数": "失敗回数",
         },
         use_container_width=True,
         disabled=["登録状況"],
         hide_index=True,
-        num_rows="dynamic"
+        num_rows="dynamic",
     )
     if st.button("新規"):
         print(edited_data)
@@ -270,50 +315,62 @@ def update_user(users):
     if user_id:
         print("users[user_id[0]]", users[user_id[0]])
         user_list = [
-            [user_id[0],
-             users[user_id[0]]['name'],
-             users[user_id[0]]['password'],
-             users[user_id[0]]['email'],
-             users[user_id[0]]['role'],
-             users[user_id[0]]['logged_in'],
-             users[user_id[0]]['failed_login_attempts']]
+            [
+                user_id[0],
+                users[user_id[0]]["name"],
+                users[user_id[0]]["password"],
+                users[user_id[0]]["email"],
+                users[user_id[0]]["role"],
+                users[user_id[0]]["logged_in"],
+                users[user_id[0]]["failed_login_attempts"],
+            ]
         ]
         print("user_list", user_list)
-        user_data = pd.DataFrame(user_list,
-                                 columns=["ログインID", "ユーザー名", 'パスワード', 'Email', 'ロール', '登録状況', '失敗回数'])
+        user_data = pd.DataFrame(
+            user_list,
+            columns=[
+                "ログインID",
+                "ユーザー名",
+                "パスワード",
+                "Email",
+                "ロール",
+                "登録状況",
+                "失敗回数",
+            ],
+        )
         edited_data = st.data_editor(
             user_data,
             column_config={
                 "ログインID": "ログインID",
                 "ユーザー名": "ユーザー名",
-                'パスワード': "パスワード",
-                'Email': "Email",
-                'ロール': "ロール",
-                '登録状況': "登録状況",
-                '失敗回数': "失敗回数"
+                "パスワード": "パスワード",
+                "Email": "Email",
+                "ロール": "ロール",
+                "登録状況": "登録状況",
+                "失敗回数": "失敗回数",
             },
-            disabled=["ログインID", '登録状況'],
+            disabled=["ログインID", "登録状況"],
             hide_index=True,
-            use_container_width=True
+            use_container_width=True,
         )
         # AgGrid(user_data, enableFiltering=True)
         if st.button("更新"):
             update_data = edited_data.iloc[0]
-            print("更新：", update_data['ロール'])
-            with open('config/config.yaml') as file:
+            print("更新：", update_data["ロール"])
+            with open("config/config.yaml") as file:
                 config = yaml.load(file, Loader=SafeLoader)
-            user = config['credentials']['usernames'][user_id[0]]
-            user["name"] = update_data['ユーザー名']
-            user["password"] = Hasher.hash(update_data['パスワード'])
-            user["email"] = update_data['Email']
-            user["role"] = update_data['ロール']
-            user["failed"] = update_data['失敗回数']
+            user = config["credentials"]["usernames"][user_id[0]]
+            user["name"] = update_data["ユーザー名"]
+            user["password"] = Hasher.hash(update_data["パスワード"])
+            user["email"] = update_data["Email"]
+            user["role"] = update_data["ロール"]
+            user["failed_login_attempts"] = update_data["失敗回数"]
             try:
-                with open('config/config.yaml', "w") as file:
+                with open("config/config.yaml", "w") as file:
                     yaml.dump(config, file)
             except Exception as e:
                 print(e)
-            st.success(f'ユーザー「{user_id[0]}」が更新成功！', icon="✅")
+            st.success(f"ユーザー「{user_id[0]}」が更新成功！", icon="✅")
 
 
 def delete_user(users):
@@ -326,43 +383,65 @@ def delete_user(users):
     if user_id:
         print("users[user_id[0]]", users[user_id[0]])
         user_list = [
-            [user_id[0],
-             users[user_id[0]]['name'],
-             users[user_id[0]]['password'],
-             users[user_id[0]]['email'],
-             users[user_id[0]]['role'],
-             users[user_id[0]]['logged_in'],
-             users[user_id[0]]['failed_login_attempts']]
+            [
+                user_id[0],
+                users[user_id[0]]["name"],
+                users[user_id[0]]["password"],
+                users[user_id[0]]["email"],
+                users[user_id[0]]["role"],
+                users[user_id[0]]["logged_in"],
+                users[user_id[0]]["failed_login_attempts"],
+            ]
         ]
         print("user_list", user_list)
-        user_data = pd.DataFrame(user_list,
-                                 columns=["ログインID", "ユーザー名", 'パスワード', 'Email', 'ロール', '登録状況', '失敗回数'])
+        user_data = pd.DataFrame(
+            user_list,
+            columns=[
+                "ログインID",
+                "ユーザー名",
+                "パスワード",
+                "Email",
+                "ロール",
+                "登録状況",
+                "失敗回数",
+            ],
+        )
         edited_data = st.data_editor(
             user_data,
             column_config={
                 "ログインID": "ログインID",
                 "ユーザー名": "ユーザー名",
-                'パスワード': "パスワード",
-                'Email': "Email",
-                'ロール': "ロール",
-                '登録状況': "登録状況",
-                '失敗回数': "失敗回数"
+                "パスワード": "パスワード",
+                "Email": "Email",
+                "ロール": "ロール",
+                "登録状況": "登録状況",
+                "失敗回数": "失敗回数",
             },
-            disabled=["ログインID", "ユーザー名", 'パスワード', 'Email', 'ロール', '登録状況', '失敗回数'],
+            disabled=[
+                "ログインID",
+                "ユーザー名",
+                "パスワード",
+                "Email",
+                "ロール",
+                "登録状況",
+                "失敗回数",
+            ],
             hide_index=True,
-            use_container_width=True
+            use_container_width=True,
         )
         # AgGrid(user_data, enableFiltering=True)
         if st.button("削除"):
             # 当点击按钮时，显示一个选择框来模拟弹出确认框
             confirm = st.radio("确认删除该用户吗？", ("请选择", "是", "否"))
             if confirm == "是":
-                with open('config/config.yaml', 'r', encoding='utf-8') as file:
+                with open("config/config.yaml", "r", encoding="utf-8") as file:
                     config = yaml.safe_load(file)
-                usernames = config['credentials']['usernames']
+                usernames = config["credentials"]["usernames"]
                 del usernames[user_id[0]]
-                with open('config/config.yaml', 'w', encoding='utf-8') as file:
-                    yaml.dump(config, file, default_flow_style=False, allow_unicode=True)
+                with open("config/config.yaml", "w", encoding="utf-8") as file:
+                    yaml.dump(
+                        config, file, default_flow_style=False, allow_unicode=True
+                    )
                 st.success(f"ユーザー「{user_id[0]}」が削除成功！", icon="✅")
             elif confirm == "否":
                 st.warning("操作已取消!")

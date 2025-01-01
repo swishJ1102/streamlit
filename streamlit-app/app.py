@@ -6,6 +6,7 @@ import sqlite3
 import datetime as datetime
 import streamlit as st
 import yaml
+from streamlit_lottie import st_lottie
 from streamlit_option_menu import option_menu
 from yaml import SafeLoader
 
@@ -30,8 +31,7 @@ emojis = [
     ":japanese_goblin:",
     ":see_no_evil:",
     ":hear_no_evil:",
-    ":speak_no_evil:"
-
+    ":speak_no_evil:",
 ]
 
 
@@ -45,10 +45,12 @@ def random_welcome(name):
 # init_db()
 
 # Streamlit 应用配置
-st.set_page_config(page_title="Dynamic Menu with Auth",
-                   page_icon="🌟",
-                   layout="wide",
-                   initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="Biprogy統合管理プラットフォーム",
+    page_icon="🌟",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 conn = sqlite3.connect("data.db")
 cursor = conn.cursor()
@@ -61,27 +63,33 @@ print("menus : ", menus)
 authenticator = get_authenticator()
 # authenticator, name, authentication_status, username = get_authenticator()
 print("st.session_state", st.session_state)
-if st.session_state['authentication_status']:
+if st.session_state["authentication_status"]:
     # authenticator.logout()
     authenticator.logout(button_name="ログアウト", location="sidebar")
-    if 'welcome' in st.session_state and st.session_state['welcome'] is not None:
-        welcome = st.session_state['welcome']
+    if "welcome" in st.session_state and st.session_state["welcome"] is not None:
+        welcome = st.session_state["welcome"]
     else:
         welcome = random_welcome(st.session_state["name"])
-        st.session_state['welcome'] = welcome
-    st.sidebar.success(f'ようこそ {welcome} *{st.session_state["name"]}*！')
+        st.session_state["welcome"] = welcome
+
+    if "name" in st.session_state:
+        st.sidebar.success(f'ようこそ {welcome} *{st.session_state["name"]}*！')
 
     # add_separator_rainbow_sidebar()
-    st.session_state.sidebar_state = 'expanded'
+    st.session_state.sidebar_state = "expanded"
 
-    print("st.session_state['authentication_status'] ", st.session_state['authentication_status'], st.session_state)
-    if st.session_state['username'] is not None:
-        with open('config/config.yaml') as file:
+    print(
+        "st.session_state['authentication_status'] ",
+        st.session_state["authentication_status"],
+        st.session_state,
+    )
+    if st.session_state["username"] is not None:
+        with open("config/config.yaml") as file:
             config = yaml.load(file, Loader=SafeLoader)
-        user = config['credentials']['usernames'][st.session_state['username']]
-        user['logged_in'] = True
+        user = config["credentials"]["usernames"][st.session_state["username"]]
+        user["logged_in"] = True
         try:
-            with open('config/config.yaml', "w") as file:
+            with open("config/config.yaml", "w") as file:
                 yaml.dump(config, file)
         except Exception as e:
             print(e)
@@ -95,21 +103,63 @@ if st.session_state['authentication_status']:
         selected_menu = option_menu(
             "ナビゲーション",  # 菜单标题
             [menu["name"] for menu in menus],  # 菜单名称列表
-            icons=["house", "envelope", "cloud-upload", "instagram", "globe", "person"],  # 可自定义图标
+            icons=[
+                "house",
+                "envelope",
+                "cloud-upload",
+                "instagram",
+                "globe",
+                "person",
+            ],  # 可自定义图标
             menu_icon="cast",  # 菜单图标
             default_index=0,  # 默认选中第一个菜单
         )
     render_page(selected_menu, menus, authenticator)
 
-    if 'login_datetime' in st.session_state and st.session_state['login_datetime'] is not None:
-        st.sidebar.info(f'{st.session_state["login_datetime"]}')
+    if (
+        "login_datetime" in st.session_state
+        and st.session_state["login_datetime"] is not None
+    ):
+        st.sidebar.info(f'ログイン：{st.session_state["login_datetime"]}')
     else:
         login_datetime = str(datetime.datetime.now())
-        st.sidebar.info(f'{login_datetime}')
-        st.session_state['login_datetime'] = login_datetime
-elif st.session_state['authentication_status'] is False:
-    st.error('ユーザー/パスワードが誤りので、チェックしてください。')
-elif st.session_state['authentication_status'] is None:
+        st.sidebar.info(f"ログイン：" f"\n\t{login_datetime}")
+        st.session_state["login_datetime"] = login_datetime
+
+    # 嵌入 JavaScript
+    hide_animation_js = """
+    <script>
+        setTimeout(() => {
+            const lottieDiv = document.getElementById('lottie-container');
+            if (lottieDiv) {
+                lottieDiv.style.display = 'none';
+            }
+        }, 5000); // 5 秒后隐藏
+    </script>
+    """
+
+    # 读取本地JSON文件
+    with open("assets/Animation - 1735602685829.json", "r") as file:
+        animation_data = json.load(file)
+    with st.sidebar:
+        st.markdown("<div id='lottie-container'>", unsafe_allow_html=True)
+        # 展示动画
+        st_lottie(
+            animation_data,
+            speed=1,  # 动画播放速度
+            reverse=False,  # 动画是否反转播放
+            loop=True,  # 动画是否循环
+            quality="high",  # 动画质量 (low, medium, high)
+            height=300,  # 动画高度
+            width=None,  # 动画宽度，默认根据高度调整比例
+            key="lottie_animation_sidebar",
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown(hide_animation_js, unsafe_allow_html=True)
+
+elif st.session_state["authentication_status"] is False:
+    st.error("ユーザー/パスワードが誤りので、チェックしてください。")
+elif st.session_state["authentication_status"] is None:
     print("logout", st.session_state)
     # with open('config/config.yaml') as file:
     #     config = yaml.load(file, Loader=SafeLoader)
@@ -121,7 +171,7 @@ elif st.session_state['authentication_status'] is None:
     #         yaml.dump(config, file)
     # except Exception as e:
     #     print(e)
-    st.warning('ユーザー/パスワードを入力してください。')
+    st.warning("ユーザー/パスワードを入力してください。")
 # if authentication_status:
 #     # 显示登录状态
 #     st.sidebar.success(f"欢迎，{name} 👋")

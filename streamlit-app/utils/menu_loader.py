@@ -1,5 +1,5 @@
 import streamlit as st
-from page import Home, Upload, User, Work, WBS
+from page import Home, Upload, User, Work, WBS, Test
 
 # 页面渲染函数映射表
 PAGE_RENDERERS = {
@@ -7,7 +7,8 @@ PAGE_RENDERERS = {
     "upload": Upload.render,
     "user": User.render,
     "work": Work.render,
-    "wbs": WBS.render
+    "wbs": WBS.render,
+    "test": Test.render
 }
 
 
