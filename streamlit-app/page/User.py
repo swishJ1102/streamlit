@@ -35,6 +35,33 @@ def render():
     st.title(":ok_woman: :gray[_ユーザー管理_] :no_good:")
     add_separator_rainbow()
 
+    # 自定义动态挂件（HTML 和 CSS）
+    widget_html = """
+        <style>
+        #floating-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 123, 255, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: float 3s ease-in-out infinite;
+            z-index: 1000;
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+        </style>
+        <div id="floating-widget">
+            🚀 ユーザー情報
+        </div>
+        """
+    st.markdown(widget_html, unsafe_allow_html=True)
+
     users_data = load_yaml()
 
     users = users_data["credentials"]["usernames"]

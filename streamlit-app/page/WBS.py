@@ -38,7 +38,4 @@ def render():
     st.title(":notebook: :gray[_WBS管理_] :notebook:")
     add_separator_rainbow()
 
-    st.markdown(
-        lottie_background("asserts/Animation - 1735641118369.json"),
-        unsafe_allow_html=True,
-    )
+

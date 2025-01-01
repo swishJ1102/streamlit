@@ -99,6 +99,42 @@ def render():
     st.title(":gray[_テスト用_] :sunglasses:")
     add_separator_rainbow()
 
+    # 自定义挂件 HTML 和 CSS
+    st.markdown(
+        """
+    <style>
+    /* 创建动态挂件 */
+    #floating-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: rgba(0, 123, 255, 0.9);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        font-weight: bold;
+        z-index: 9999; /* 确保挂件的优先级更高 */
+        animation: bounce 2s infinite;
+    }
+    /* 动态效果 */
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    /* 调整 Streamlit iframe 的 z-index */
+    iframe {
+        z-index: 1;
+    }
+    </style>
+    <div id="floating-widget">
+        🚀 动态挂件覆盖效果
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
     background_css = """
     <style>
     body {
