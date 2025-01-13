@@ -1,3 +1,104 @@
+在遍历整个 CompilationUnit（cu）时，可以通过遍历节点树，定位到指定的代码行。例如，如果你想定位到类似 this.validator(...).validate(...) 的代码，可以使用 JavaParser 的 Node 类型过滤器，找到所有的 MethodCallExpr，然后检查是否匹配目标结构。
+
+以下是一个完整的实现示例：
+
+示例代码：定位特定代码行
+
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+
+import java.io.File;
+import java.util.Optional;
+
+public class FindSpecificLine {
+    public static void main(String[] args) throws Exception {
+        // 加载 Java 文件
+        CompilationUnit cu = StaticJavaParser.parse(new File("YourJavaFile.java"));
+
+        // 遍历所有 MethodCallExpr 节点，查找目标代码
+        cu.findAll(MethodCallExpr.class).forEach(methodCall -> {
+            if (isTargetLine(methodCall)) {
+                // 定位到具体代码行
+                int line = methodCall.getBegin().map(p -> p.line).orElse(-1);
+                System.out.println("找到目标代码，行号：" + line);
+                System.out.println("代码内容：" + methodCall);
+            }
+        });
+    }
+
+    private static boolean isTargetLine(MethodCallExpr methodCall) {
+        // 检查是否是 this.validator(...) 调用
+        if (methodCall.getNameAsString().equals("validate")) {
+            // 检查是否是链式调用 this.validator(...).validate(...)
+            Optional<Node> parentNode = methodCall.getScope();
+            if (parentNode.isPresent() && parentNode.get() instanceof MethodCallExpr) {
+                MethodCallExpr parentCall = (MethodCallExpr) parentNode.get();
+                return parentCall.getNameAsString().equals("validator");
+            }
+        }
+        return false;
+    }
+}
+
+代码说明
+	1.	findAll(MethodCallExpr.class)
+使用 CompilationUnit.findAll 方法查找所有 MethodCallExpr 节点。
+	2.	匹配目标代码
+在 isTargetLine 方法中：
+	•	检查方法名是否为 validate。
+	•	判断其是否是 this.validator(...).validate(...) 的结构，即 validate 方法的调用范围（Scope）是否是 validator 方法调用。
+	3.	获取行号
+使用 methodCall.getBegin() 获取代码在源文件中的起始行号：
+
+int line = methodCall.getBegin().map(p -> p.line).orElse(-1);
+
+
+	4.	输出匹配代码
+一旦匹配到目标代码行，打印其行号和完整内容。
+
+示例输出
+
+假设 YourJavaFile.java 包含以下代码：
+
+public class Test {
+    public void example() {
+        this.validator("param").validate(Validator.REQUIRED);
+    }
+}
+
+运行上述代码将输出：
+
+找到目标代码，行号：3
+代码内容：validate(Validator.REQUIRED)
+
+如何应用到循环中
+
+如果你正在遍历整个 cu 的节点树，只需在 findAll 结果中加入你当前的逻辑即可。例如：
+
+cu.findAll(MethodCallExpr.class).forEach(methodCall -> {
+    if (isTargetLine(methodCall)) {
+        // 在这里插入你的逻辑，例如修改代码
+    }
+});
+
+注意事项
+	1.	代码结构复杂性
+如果 validator 或 validate 方法被嵌套在其他调用中，例如：
+
+someMethod(this.validator("param").validate(Validator.REQUIRED));
+
+需要调整匹配逻辑，递归处理 Scope。
+
+	2.	静态方法调用
+如果目标代码中 validator 或 validate 是静态方法，逻辑需要适当调整。
+	3.	文件定位
+如果 cu 是从多个文件中解析而来，可以在输出时附加文件路径，帮助定位源文件。
+
+如果你需要进一步修改代码或者扩展逻辑，请随时告知！
+
+
 明白了！Validator.REQUIRED 也是一个变量，因此在生成的代码中不应将其作为硬编码字符串处理，而是直接保留为变量表达式。下面是调整后的实现，针对 Validator.REQUIRED 也按变量动态解析。
 
 示例代码
