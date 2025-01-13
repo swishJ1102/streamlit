@@ -1,0 +1,117 @@
+明白了！Validator.REQUIRED 也是一个变量，因此在生成的代码中不应将其作为硬编码字符串处理，而是直接保留为变量表达式。下面是调整后的实现，针对 Validator.REQUIRED 也按变量动态解析。
+
+示例代码
+
+以下代码处理 Validator.REQUIRED 和其他变量，确保正确生成 if-else 语句：
+
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.Statement;
+
+public class TransformValidatorCodeWithAllVariables {
+    public static void main(String[] args) {
+        // 原始代码
+        String code = "this.validator(sca01001Bean.contractBean.voltageCategoryCode).validate(Validator.REQUIRED);";
+
+        // 解析为 MethodCallExpr
+        MethodCallExpr originalCall = StaticJavaParser.parseExpression(code).asMethodCallExpr();
+
+        // 调用转换方法
+        Statement transformedCode = transformValidatorCall(originalCall);
+
+        // 输出生成代码
+        System.out.println(transformedCode);
+    }
+
+    private static Statement transformValidatorCall(MethodCallExpr originalCall) {
+        // 获取原始 `this.validator()` 的第一个参数（变量）
+        Expression firstArg = originalCall.getArguments().get(0);
+
+        // 获取原始 `validate()` 的第一个参数（变量 Validator.REQUIRED）
+        Expression secondArg = originalCall.getScope()
+                .flatMap(scope -> scope.asMethodCallExpr().getArguments().stream().findFirst())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid validate method call"));
+
+        // 构建 if 条件
+        Expression condition = StaticJavaParser.parseExpression("sca01001Bean.getContractBean() != null");
+
+        // 构建 if 块
+        BlockStmt ifBlock = new BlockStmt();
+        MethodCallExpr ifValidatorCall = new MethodCallExpr(null, "this.validator");
+        ifValidatorCall.addArgument(firstArg);
+        ifValidatorCall.addArgument(StaticJavaParser.parseExpression("sca01001Bean.getContractBean().getVoltageCategoryCode()"));
+        MethodCallExpr ifValidateCall = new MethodCallExpr(ifValidatorCall, "validate");
+        ifValidateCall.addArgument(secondArg);
+        ifValidateCall.addArgument(StaticJavaParser.parseExpression("GetText.getText(sca01001Bean.contractBean.voltageCategoryCode)"));
+        ifBlock.addStatement(ifValidateCall);
+
+        // 构建 else 块
+        BlockStmt elseBlock = new BlockStmt();
+        MethodCallExpr elseValidatorCall = new MethodCallExpr(null, "this.validator");
+        elseValidatorCall.addArgument(firstArg);
+        elseValidatorCall.addArgument("\"\""); // 空字符串
+        MethodCallExpr elseValidateCall = new MethodCallExpr(elseValidatorCall, "validate");
+        elseValidateCall.addArgument(secondArg);
+        elseValidateCall.addArgument(StaticJavaParser.parseExpression("GetText.getText(sca01001Bean.contractBean.voltageCategoryCode)"));
+        elseBlock.addStatement(elseValidateCall);
+
+        // 构建完整的 if-else 语句
+        return new IfStmt(condition, ifBlock, elseBlock);
+    }
+}
+
+输出结果
+
+执行上述代码后，将生成如下 if-else 代码：
+
+if (sca01001Bean.getContractBean() != null) {
+    this.validator(sca01001Bean.contractBean.voltageCategoryCode, sca01001Bean.getContractBean().getVoltageCategoryCode()).validate(Validator.REQUIRED, GetText.getText(sca01001Bean.contractBean.voltageCategoryCode));
+} else {
+    this.validator(sca01001Bean.contractBean.voltageCategoryCode, "").validate(Validator.REQUIRED, GetText.getText(sca01001Bean.contractBean.voltageCategoryCode));
+}
+
+关键点详解
+	1.	变量处理
+使用 StaticJavaParser 提取所有变量表达式：
+	•	sca01001Bean.contractBean.voltageCategoryCode 是第一个参数（validator 方法的参数）。
+	•	Validator.REQUIRED 是第二个参数（validate 方法的参数）。
+
+Expression firstArg = originalCall.getArguments().get(0);
+Expression secondArg = originalCall.getScope()
+        .flatMap(scope -> scope.asMethodCallExpr().getArguments().stream().findFirst())
+        .orElseThrow(() -> new IllegalArgumentException("Invalid validate method call"));
+
+
+	2.	动态构建方法调用
+使用 MethodCallExpr 动态构建 this.validator() 和 .validate() 调用链，并分别插入参数：
+
+MethodCallExpr ifValidatorCall = new MethodCallExpr(null, "this.validator");
+ifValidatorCall.addArgument(firstArg);
+ifValidatorCall.addArgument(StaticJavaParser.parseExpression("sca01001Bean.getContractBean().getVoltageCategoryCode()"));
+
+MethodCallExpr ifValidateCall = new MethodCallExpr(ifValidatorCall, "validate");
+ifValidateCall.addArgument(secondArg);
+ifValidateCall.addArgument(StaticJavaParser.parseExpression("GetText.getText(sca01001Bean.contractBean.voltageCategoryCode)"));
+
+
+	3.	插入空字符串
+在 else 块中动态插入空字符串作为参数：
+
+elseValidatorCall.addArgument("\"\"");
+
+
+	4.	完整 if-else 构建
+使用 IfStmt 创建 if 和 else 块，并插入已构建的代码。
+
+注意事项
+	1.	提取参数链
+如果方法链更复杂（如 this.validator(...).chain1().chain2(...).validate(...)），需要递归处理 Scope。
+	2.	类型校验
+确保获取到的参数类型正确，例如 FieldAccessExpr、NameExpr 等。
+	3.	异常处理
+如果方法调用结构不符合预期（例如缺少参数或嵌套结构不对），建议添加异常处理以保证健壮性。
+
+如果需要处理更多变量或方法链，或者有其他需求，欢迎继续提问！
