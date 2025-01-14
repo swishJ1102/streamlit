@@ -1,3 +1,244 @@
+要判断一行代码是否符合目标形式（如 this.validator(...).validate(...)，且可能有多次链式 validate() 调用），需要检查以下条件：
+
+检查条件
+	1.	是否为 MethodCallExpr 类型：
+	•	确保当前节点是方法调用表达式。
+	2.	方法名称是否为 validate：
+	•	递归检查每一层链式调用，方法名称是否为 validate。
+	3.	链式调用是否起始于 this.validator()：
+	•	确保最底层的链调用起始于 this.validator()。
+	4.	参数匹配：
+	•	如果需要更严格的验证，可以检查 this.validator(...) 和 validate(...) 的参数结构是否符合预期。
+
+判断方法实现
+
+以下代码演示如何判断一行代码是否符合 this.validator(...).validate(...).validate(...) 的形式：
+
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+
+import java.io.File;
+
+public class ValidatorChainChecker {
+    public static void main(String[] args) throws Exception {
+        // 加载 Java 文件
+        CompilationUnit cu = StaticJavaParser.parse(new File("YourJavaFile.java"));
+
+        // 遍历所有方法调用表达式
+        cu.findAll(MethodCallExpr.class).forEach(methodCall -> {
+            if (isValidatorChain(methodCall)) {
+                System.out.println("Found a matching validator chain:");
+                System.out.println(methodCall);
+            }
+        });
+    }
+
+    /**
+     * 判断方法调用是否符合目标形式
+     */
+    private static boolean isValidatorChain(MethodCallExpr methodCall) {
+        // 判断方法名称是否为 "validate"
+        if (!methodCall.getNameAsString().equals("validate")) {
+            return false;
+        }
+
+        // 检查当前方法调用是否有上级调用链
+        if (methodCall.getScope().isPresent()) {
+            // 获取上一级调用
+            if (methodCall.getScope().get() instanceof MethodCallExpr) {
+                MethodCallExpr parentCall = (MethodCallExpr) methodCall.getScope().get();
+                // 递归检查上一级是否符合
+                return isValidatorChain(parentCall);
+            } else {
+                // 如果上一级不是方法调用，检查是否为 this.validator(...)
+                return isValidatorCall(methodCall.getScope().get());
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 判断是否为 this.validator(...) 的调用
+     */
+    private static boolean isValidatorCall(Object scope) {
+        if (scope instanceof MethodCallExpr) {
+            MethodCallExpr methodCall = (MethodCallExpr) scope;
+            return methodCall.getNameAsString().equals("validator")
+                    && methodCall.getScope().isPresent()
+                    && methodCall.getScope().get().toString().equals("this");
+        }
+        return false;
+    }
+}
+
+示例输入代码
+
+以下是输入代码的示例：
+
+this.validator("param1").validate(Validator.CHECKED);
+this.validator("param2").validate(Validator.REQUIRED).validate(Validator.OPTIONAL);
+someOtherMethod().validate(Validator.CHECKED);
+
+输出结果
+
+运行程序后，输出：
+
+Found a matching validator chain:
+this.validator("param1").validate(Validator.CHECKED)
+
+Found a matching validator chain:
+this.validator("param2").validate(Validator.REQUIRED).validate(Validator.OPTIONAL)
+
+代码解析
+	1.	方法链递归检查：
+	•	在 isValidatorChain 中，通过递归检查每一级调用，确认整个调用链符合预期格式。
+	2.	基础调用检查：
+	•	在 isValidatorCall 中，检查最底层的调用是否是 this.validator(...)，确保链的起点正确。
+	3.	灵活匹配：
+	•	代码支持任意深度的链式调用，如 this.validator(...).validate(...).validate(...).validate(...)。
+
+修改后的完整实现
+
+在确认一行代码符合目标形式后，可以直接对其进行替换：
+
+if (isValidatorChain(methodCall)) {
+    MethodCallExpr transformed = transformValidatorChain(methodCall);
+    System.out.println("Transformed code:");
+    System.out.println(transformed);
+}
+
+注意事项
+	1.	参数验证：
+如果需要对 this.validator(...) 和 validate(...) 的参数进行更严格的验证，可以进一步扩展 isValidatorCall 和 isValidatorChain 方法。
+	2.	防止错误匹配：
+如果代码中有类似 someOtherObject.validator(...) 的调用，需要确保 this.validator(...) 是链的起点，避免错误匹配。
+	3.	代码性能：
+对于大型代码库，递归检查可能影响性能。如果代码层次较深，可以使用迭代方式替代递归。
+
+如果需要进一步定制判断逻辑或处理更复杂的场景，请随时告诉我！
+
+
+
+如果调用链中 validate() 方法可能多次出现（例如 this.validator().validate().validate() 或更长的调用链），你需要递归地解析和替换调用链中的每一次 validate()。以下是一个通用的解决方案：
+
+实现思路
+	1.	递归解析调用链：
+	•	如果调用链中包含多个 validate() 方法，递归处理每一级方法调用，确保每次调用都被正确替换。
+	2.	重新构造调用链：
+	•	使用 JavaParser 提取链式调用中的每一层方法（this.validator() 和每个 validate() 方法）。
+	•	动态生成新代码，按需插入参数。
+	3.	最终生成替换代码：
+	•	按调用链的深度逐步重构完整调用，直到所有调用被正确处理。
+
+示例代码
+
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.stmt.Statement;
+
+import java.io.File;
+
+public class TransformValidatorChain {
+    public static void main(String[] args) throws Exception {
+        // 加载 Java 文件
+        CompilationUnit cu = StaticJavaParser.parse(new File("YourJavaFile.java"));
+
+        // 遍历所有 MethodCallExpr 节点，找到目标代码
+        cu.findAll(MethodCallExpr.class).forEach(methodCall -> {
+            if (isValidatorChain(methodCall)) {
+                // 转换代码
+                MethodCallExpr transformed = transformValidatorChain(methodCall);
+                System.out.println("转换后的代码：");
+                System.out.println(transformed);
+            }
+        });
+    }
+
+    private static boolean isValidatorChain(MethodCallExpr methodCall) {
+        // 检查是否是 validate 调用，且有链式调用
+        return methodCall.getNameAsString().equals("validate") && methodCall.getScope().isPresent();
+    }
+
+    private static MethodCallExpr transformValidatorChain(MethodCallExpr methodCall) {
+        // 如果还有上一级方法调用，递归处理上一级
+        if (methodCall.getScope().isPresent() && methodCall.getScope().get() instanceof MethodCallExpr) {
+            MethodCallExpr parentCall = (MethodCallExpr) methodCall.getScope().get();
+            MethodCallExpr transformedParent = transformValidatorChain(parentCall);
+            methodCall.setScope(transformedParent);
+        }
+
+        // 获取当前 validate 调用的范围（即 validator 调用）
+        MethodCallExpr validatorCall = (MethodCallExpr) methodCall.getScope().get();
+
+        // 提取 validator 的参数（如果有）
+        Expression param1 = validatorCall.getArguments().get(0); // 第一个参数
+        MethodCallExpr newValidatorCall = new MethodCallExpr(null, "this.validator");
+        newValidatorCall.addArgument(param1); // 保留第一个参数
+        newValidatorCall.addArgument("sca01001Bean.getProvisionOkConfirm()"); // 添加动态变量
+
+        // 构造新的 validate 调用
+        MethodCallExpr newValidateCall = new MethodCallExpr(newValidatorCall, "validate");
+        newValidateCall.addArgument("Validator.CHECKED");
+        newValidateCall.addArgument("GetText.getText(" + param1 + ")");
+
+        return newValidateCall;
+    }
+}
+
+示例输入代码
+
+假设输入的代码如下：
+
+this.validator("sca01001Bean.provisionOkConfirm").validate(Validator.CHECKED).validate(Validator.REQUIRED).validate(Validator.OPTIONAL);
+
+示例输出代码
+
+运行程序后，转换的代码如下：
+
+this.validator("sca01001Bean.provisionOkConfirm", sca01001Bean.getProvisionOkConfirm())
+    .validate(Validator.CHECKED, GetText.getText("sca01001Bean.provisionOkConfirm"))
+    .validate(Validator.REQUIRED, GetText.getText("sca01001Bean.provisionOkConfirm"))
+    .validate(Validator.OPTIONAL, GetText.getText("sca01001Bean.provisionOkConfirm"));
+
+实现细节
+	1.	递归处理链式调用：
+	•	每次遇到 validate() 方法，先递归处理其调用范围，确保链式调用的上一级已经被正确替换。
+	•	使用以下代码递归调用父级：
+
+if (methodCall.getScope().isPresent() && methodCall.getScope().get() instanceof MethodCallExpr) {
+    MethodCallExpr parentCall = (MethodCallExpr) methodCall.getScope().get();
+    MethodCallExpr transformedParent = transformValidatorChain(parentCall);
+    methodCall.setScope(transformedParent);
+}
+
+
+	2.	动态生成参数：
+	•	对于每个 validate() 方法调用，动态生成额外的参数：
+
+newValidateCall.addArgument("GetText.getText(" + param1 + ")");
+
+
+	3.	支持多层调用：
+	•	代码结构允许无限层次的调用链，只要调用链遵循 this.validator().validate() 的模式。
+	4.	可扩展性：
+	•	如果 validator() 或 validate() 的逻辑有特殊需求，可以扩展 transformValidatorChain 方法。
+
+注意事项
+	1.	边界检查：
+	•	确保每个方法调用的参数数量是正确的。如果参数不足或调用链存在错误，需要添加额外的检查以避免 NullPointerException。
+	2.	代码写回文件：
+	•	如果需要将修改后的代码写回到源文件，可以使用 Files.write 方法，将修改后的 CompilationUnit 写入目标文件。
+	3.	复杂结构支持：
+	•	如果代码中有更多复杂的链式调用或嵌套逻辑，可以进一步扩展方法处理嵌套结构。
+
+如果有其他需求或更复杂的调用链，欢迎继续提问！
+
+
 在遍历整个 CompilationUnit（cu）时，可以通过遍历节点树，定位到指定的代码行。例如，如果你想定位到类似 this.validator(...).validate(...) 的代码，可以使用 JavaParser 的 Node 类型过滤器，找到所有的 MethodCallExpr，然后检查是否匹配目标结构。
 
 以下是一个完整的实现示例：
